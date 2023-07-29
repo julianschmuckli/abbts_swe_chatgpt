@@ -4,31 +4,30 @@ import Reader from "./reader";
 import Weather from "./functions/Weather";
 require("dotenv").config();
 
-console.log(`Using API key: ${process.env.OPENAI_API_KEY}`);
-
-const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-});
-
-const aFunctions : Array<ChatCompletionFunctions> = [
-    new Weather()
-];
-
 export default class Chat {
     private sModel: string;
     private oOpenAI: OpenAIApi;
 
     private aMessages: ChatCompletionResponseMessage[] = [];
+    private aFunctions : Array<ChatCompletionFunctions> = [
+        new Weather()
+    ];
 
     constructor(sModel: string = "gpt-3.5-turbo") {
         this.sModel = sModel;
+
+        console.log(`Using API key: ${process.env.OPENAI_API_KEY}`);
+        const configuration = new Configuration({
+            apiKey: process.env.OPENAI_API_KEY,
+        });
+
         this.oOpenAI = new OpenAIApi(configuration);
     }
 
     public async start() {
         let bExit = false;
         do {
-            const sMessage = await Reader.readLine("Input: ");
+            const sMessage = await Reader.readLine("Me: ");
 
             if (sMessage.toLowerCase() === "exit") {
                 bExit = true;
@@ -48,7 +47,7 @@ export default class Chat {
             const oResult = await this.oOpenAI.createChatCompletion({
                 model: this.sModel,
                 messages: this.aMessages,
-                functions: aFunctions
+                //functions: this.aFunctions
             });
 
             if (oResult && oResult.data.choices[0].message) {
@@ -57,6 +56,7 @@ export default class Chat {
                 if (oReturnMessage.function_call) {
                     console.log(oReturnMessage.content)
                 } else {
+                    console.log(`ChatGPT: ${oReturnMessage.content}`);
                     this.aMessages.push(oReturnMessage);
                 }
 
