@@ -2,6 +2,7 @@ import { ChatCompletionFunctions, ChatCompletionResponseMessage, ChatCompletionR
 import Reader from "./reader";
 
 import Weather from "./functions/Weather";
+import Function from "./interfaces/Function";
 require("dotenv").config();
 
 export default class Chat {
@@ -9,7 +10,11 @@ export default class Chat {
     private oOpenAI: OpenAIApi;
 
     private aMessages: ChatCompletionResponseMessage[] = [];
-    private aFunctions : Array<ChatCompletionFunctions> = [
+
+    /**
+     * The functions defined in this array will be available to the AI.
+     */
+    private aFunctions: Array<Function> = [
         new Weather()
     ];
 
@@ -47,18 +52,29 @@ export default class Chat {
             const oResult = await this.oOpenAI.createChatCompletion({
                 model: this.sModel,
                 messages: this.aMessages,
-                //functions: this.aFunctions
+                functions: this.aFunctions
             });
 
             if (oResult && oResult.data.choices[0].message) {
                 const oReturnMessage = oResult.data.choices[0].message;
 
+                // Call the correct function with arguments depending on the name.
                 if (oReturnMessage.function_call) {
-                    console.log(oReturnMessage.content)
-                } else {
-                    console.log(`ChatGPT: ${oReturnMessage.content}`);
-                    this.aMessages.push(oReturnMessage);
+                    const oFunction = this.getFunction(oReturnMessage.function_call.name!);
+                    if (!oFunction) {
+                        console.error(`Function ${oReturnMessage.function_call.name} not found.`);
+                        return false;
+                    }
+                    
+                    if (oReturnMessage.function_call.arguments) {
+                        oReturnMessage.content = await oFunction.call(JSON.parse(oReturnMessage.function_call.arguments));
+                    } else {
+                        oReturnMessage.content = await oFunction.call({});
+                    }
                 }
+
+                console.log(`ChatGPT: ${oReturnMessage.content}`);
+                this.aMessages.push(oReturnMessage);
 
                 return true;
             } else {
@@ -69,5 +85,14 @@ export default class Chat {
             console.error(e.message);
         }
         return false;
+    }
+
+    private getFunction(sName: string): Function | null {
+        for (let oFunction of this.aFunctions) {
+            if (oFunction.name === sName) {
+                return oFunction;
+            }
+        }
+        return null;
     }
 }

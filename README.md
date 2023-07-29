@@ -2,7 +2,7 @@
 A demo project for using the OpenAI ChatGPT APIs.
 
 ## Setup
-Create an environment variable called `OPENAI_API_KEY` with your API key `.env` in the root of the project (where the sample is located);
+First create the environment file `.env` in the root directory of the project. The file should contain the variables as in the `.env.sample` file.
 
 Then start the following commands:
 ```bash

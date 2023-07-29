@@ -1,7 +1,5 @@
-export default interface Function {
-    name: string;
-    description: string;
-    parameters?: object
+import { ChatCompletionFunctions } from "openai";
 
-    call(aArguments : Array<String>) : Promise<any>;
+export default interface Function extends ChatCompletionFunctions {
+    call(aArguments : object) : Promise<any>;
 }
