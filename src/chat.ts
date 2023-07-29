@@ -4,6 +4,8 @@ import Reader from "./reader";
 import Weather from "./functions/Weather";
 require("dotenv").config();
 
+console.log(`Using API key: ${process.env.OPENAI_API_KEY}`);
+
 const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
 });
