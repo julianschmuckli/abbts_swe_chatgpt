@@ -1,2 +1,2 @@
-# abbts_swe_chatgpt
-A demo project for using the ChatGPT functionality
+# ABB TS: ChatGPT Demo
+A demo project for using the OpenAI ChatGPT APIs.
